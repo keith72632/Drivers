@@ -1,0 +1,38 @@
+Uart Notes
+Uart Peripheral Clock:
+    All uart runs at 16MHz, due to occilator
+Shift rergisters are used to transer bits into words
+Steps to set up Data Transmission
+    1. Set the M bit in USART_CR1 to define word length(8 or 9 bits)
+    2.Program the number of stop bits in USART_CR2 register
+    3.Select the desired baud rate 
+    4.Set the TE bit in USART_CR1 to enable transmit block
+    5.Enable USART by writing the UE bit in the USART_CR1
+    6.If the txe flag is set, then write the data byte to the usart_dr register. 
+    7. After writing the last data into the usart_dr, wait unti tc = 1
+Uart Reciver
+    1.program the M bit for word length
+    2.program the desired baud rate in brr
+    3. Enable the usart with the UE bit
+    4.Set the re bit in the usart_cr1 register, which enable the reciever block
+    5.When a character is recieved, wait until the rxne bit is set and read the data byte
+    6.The rxne bit must be cleard by reading the data register, before the end of reception 
+        of the next character to avoid overrun error
+USART Driver Api
+    Configurable items:
+        USART_Mode
+        USART_Baud
+        USART_NoOfStopBits
+        USART_WordLength
+        USART_ParityControl
+        USART_HWFlowControl
+    APIS
+        Usart Intitialization
+        Usart TX
+        Usart RX
+        Usart Interrupt handling
+        Other Usart Managing
+
+
+Usart Interrupts
+    

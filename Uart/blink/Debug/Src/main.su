@@ -1,0 +1,8 @@
+main.c:37:6:led_init	4	static
+main.c:43:6:led_on	4	static
+main.c:48:6:usart_init	4	static
+main.c:59:6:uart_write	16	static
+main.c:65:6:uart_write_string	24	static
+main.c:74:9:uart_read	4	static
+main.c:81:5:main	32	static
+main.c:97:6:USART2_IRQHandler	8	static

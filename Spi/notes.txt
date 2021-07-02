@@ -1,0 +1,23 @@
+What is SPI?
+    Serial Peripheral Interface, used to commuincate with master and slave devices. Other transfer protocols are I2P,
+usba  and ethernet. The pins that use SPI are the MISO pins(Master in and out), the MOSI pin(master out/slave in), SCK( Serial
+clock). These pins will be syncronized with the PCK. SS stands for slave select. Used to select and individual slave
+device. Thse miso and mosi are used to communicate between slaves and masters. SPI allows higher speeds. I2C is much
+slower but more complex and can span larger distances. RS-232 and RS-485 can reach much further distances. 
+
+Importance of slave pin select:
+    Master must support SPI protocol. To use, the master must first select the slave's ss pin. Unless the ss is pulled
+to 0 or ground, Master won't be able to access the slave. The SCLK must be sent along with the data. Slave's data
+communication lines(MISO and MOSI) will be in HI-Z state or high dependence state until ss line is pulled to ground.
+So, to activate the slave's miso and mosi lines, ss must be pulled to ground. 
+
+Minimal SPI bus configuartion:
+    The SPI bus allows the communication between one master and multiple slaves. In some application, the SPI bus may 
+consist of only two wires-one for the clock signal and the other for synchronous data transfer. This method is used when
+master isn't expecting a signal FROM slave, only sending to slave. SS would be programed to zero in this instance. 
+
+SPI behind the scenes operations:
+    Uses a shift register. 8 Master and slave have 8 bit registers. Sending SCLK initializes shift register. Each clock
+cycle, shift registers shift one bit. last bit in slave shift is tranfers to this first bit in slave shift register. When
+master sends data, it always recieved data. If 0 bit is sent to slave, slave shift is right shifted one bit, and last
+slave bit is tranfers to first master bit.  
