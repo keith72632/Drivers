@@ -21,3 +21,57 @@ SPI behind the scenes operations:
 cycle, shift registers shift one bit. last bit in slave shift is tranfers to this first bit in slave shift register. When
 master sends data, it always recieved data. If 0 bit is sent to slave, slave shift is right shifted one bit, and last
 slave bit is tranfers to first master bit.  
+
+Customizing SPI Bus
+    Allows the mcu to commuicate using different Communication. Full-duplex communication 
+the shift registers of the master and slave are linked using two undirectional lines between
+MOSI and the MISO pins. During spi communication, data is shifted synchronously on the 
+SCK clock edges provided by the master. Half-duplex one single cross connection line is 
+used to link the shift register of the master and slave together. MOSI of the master is
+connected to the MISO of the slave, with a register inbetween. MISO of master and MOSI 
+of slave is free. Master has to be in transfer mode and Slave has to be in recieve mode,
+and vice versa. Simplex communicatio is in "simple" mode. Master and slave are in transmit
+and recieve only mode. MOSI line of both are connected. Application has to ignore the
+information captured on the unused input pin. This pin can be used as a GPIO pin. 
+
+STM32 Functional Block Diagram
+    4 pins for each SPI peripheral. Shift register can hold 16 bits. If peripheral is 
+configured as Master, data from shift register is transmitted, and is configured as slave,
+data is received through MISO to shift regitser. SCK controlled by buad rate generated if 
+Master. NSS is slave select. Rx and Tx buffer can be accessed through APB bus. Transmit 
+data by writing to TX buffer and if shift register is free(not busy), data in tx buffer
+will be loaded into shift register and out of MOSI pin. SPI has control and baud rate 
+registers. Used to configure data size and if master or slave. 
+
+Slave Selct (NSS) Pin Management
+    When a device is slave mode: The NSS works as standard chip select input and lets the slave
+communicate with master. When a device is master: NSS can be used either as output or 
+input. As input it can prevent multi-master bus collision, and as an output it can 
+drive a slave select signal of a single slave. 
+
+Two Types of Slave Managment
+    There are Hardware slave managment and Software Slave Management. To configure for 
+software slave managment, SSM = 1. In this configuration, slave select information is driven
+internally by the SSI bit value in regitser SPIx_CR1. The external NSS pin is free for 
+other applications. Instead of grounding Slave Select(SS), pin is set to 1 in memory. Do
+this by setting SSM to 1 and SSI to 0. If SSI = 1, then pin is pulled to VDD. 
+    Hardware Managment: Master SS is connected to slave SS. Master SSM = 0 and slave SSM
+also = 0. With SSM 0 on slave, slave expects someone else to pull line to ground. NSS in 
+master must be output mode. With multiple slaves, slave NSS connected to IO pins. Activate 
+slaves by pulling ground to low. When one master and multiple slaves, master nss cannot be 
+used and must be connected to VDD.  
+    Important takeaways:
+        1 Master and 1 Slave: 
+            1. You need not use NSS pin of master and slave if you use software slave managment
+            2. If you don't want to use software slave management then you can connect NSS
+            of master and slave
+        1 Master and Multiple Slaves:
+            1. You cannot use software slave managment here
+            2. You cannot use the NSS pin of the master to connect to NSS pin of any slaves
+            3. Master has to use some of its GPIO pins to control the different NSS pins of slaves
+
+SPI Communication Format
+    Serial Clock Phase(CPHA), SCLK Polarity(CPOL) and Data Fram Format(DFF). During SPI
+Comunnication, recieve and transmit operations are performed simultaneously. The Serial Clock
+synchronizes the shifting and sampling of the information on the data lines. Communication
+format depends on the clock phase, the clock polarity and the data frame format.
