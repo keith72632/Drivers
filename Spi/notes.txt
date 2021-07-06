@@ -74,4 +74,32 @@ SPI Communication Format
     Serial Clock Phase(CPHA), SCLK Polarity(CPOL) and Data Fram Format(DFF). During SPI
 Comunnication, recieve and transmit operations are performed simultaneously. The Serial Clock
 synchronizes the shifting and sampling of the information on the data lines. Communication
-format depends on the clock phase, the clock polarity and the data frame format.
+format depends on the clock phase, the clock polarity and the data frame format. When communicating
+with SPI the commmunication format for master and slave must be the same. Data format, which can 
+be 8 or 16, must be the same for master and slave. 
+    CPOL bit controls the idle state value of the clock when no data is being tansfered. If the 
+CPOL is reset, the SCLK(serial clock) pin has a low-level idle state. If the CPOL is set, the 
+SCLK pin has a high-level idle state. In SPI peripheral there is a CPOL bit, if 0, starts 
+a 0 or low-level. If 1, clock starts from high level. Clock polarity is wether the start is 
+high or low. 
+    CPHA cotrols at which clock edge of the SCLK(1st or 2nd) the data should be sampled by slave.
+The combination of the CPOL and CPHA(clock phase) bits select the data capture clock edge. Data 
+transmission has two edges, first when it rises or falls, depending on CPOL, and second edge when
+it rises or falls depending on CPOL. Data is captured(CPHA) during second edge of clock. 
+    CPOL of 1 captures on the rising edge, and CPOL of 0 captures on the falling edge. Default
+is CPOL == 0. The why behind these settings depends on the application. If an application depends
+on the clock state being high, the CPOL should be 1. 
+    4 different SPI modes. 0 through 3. Mode 0 == CPOL 0 and CPHA 0, Mode 1 == CPOL 0 and CPHA 1,
+Mode 2 = CPOL 1 and CPHA 0, and MODE 3 == CPOL 1 and CPHA 1. If CPSHASE = 1, data will be sampled 
+on trailing edge, if CPHASE = 0, data will be sampled on the leading edge. 
+
+    SPI Peripherals
+AHB1 is for GPIO, APB1 handles I2C, SPI, USART and UART, and APB2 handles SPI, USART EXT and SYSCFG.
+
+    SPI Serial Clock (SCLK)
+    The maximum serial clock speed is based on the speed of the APBx bus on which the SPI peripheral
+is located. In stm32, the 16MHz occilator is used, just like usart. Prescaler for APB1 is 1, so 16MHz
+divided by 1. SPI has another post-prescaler, which then divides speed by 2, which leaves the speed 
+at 16MHz / 2, which is 8MHz. In summary, if RC oscillator of 16MHz is used as system clock, the 
+SPI1/SPI2/SPI3 peripherals can be able to produce the serial clock of maximum 8MHz, due to the 
+secondary prescaler.  

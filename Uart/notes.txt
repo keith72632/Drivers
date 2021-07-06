@@ -34,5 +34,7 @@ USART Driver Api
         Other Usart Managing
 
 
-Usart Interrupts
-    
+    Usart 16MHz
+USART and UART commuincations is transered with a speed of 16MHz, because this is the speed allowed by the 
+Clock occilator. It runs at a rate of 2Mbps, or 32MHz, but sends two symbols, so is actaully 1Mbps, or 
+16MHz.
