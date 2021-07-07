@@ -18,6 +18,7 @@
  */
 
 #include <stdint.h>
+#include "stm32f407xx.h"
 
 #if !defined(__SOFT_FP__) && defined(__ARM_FP)
   #warning "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
@@ -25,6 +26,14 @@
 
 int main(void)
 {
+  GPIO_RegDef_t *pinD = (GPIO_RegDef_t *)GPIOD_BASEADDR;
+  RCC_RegDef_t *rcc = (RCC_RegDef_t *)RCC_BASEADDR;
+
+  rcc->AHB1ENR |= (1 << 3);
+
+  pinD->MODER |= (1 << 30);
+
+  pinD->ODR |= (1 << 15);
     /* Loop forever */
 	for(;;);
 }
