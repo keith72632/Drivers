@@ -18,22 +18,72 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include "stm32f407xx.h"
+#include "stm32f407xx_spi.h"
 
 #if !defined(__SOFT_FP__) && defined(__ARM_FP)
   #warning "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
 #endif
+/*
+ * pb14 -> SPI2 MISO
+ * pb15 -> SPI2_MOSI
+ * pb13 -> SPI2_SCLK
+ * pb12 -> SPI2_NSS
+ * Alt Function Mode: 5
+ */
+#define PIN12    12
+#define PIN13    13
+#define PIN14    14
+#define PIN15    15
+
+
+void SPI2_GPIOInits(void)
+{
+	GPIO_RegDef_t *pinB = (GPIO_RegDef_t *)GPIOB_BASEADDR;
+	RCC_RegDef_t *rcc = (RCC_RegDef_t *)RCC_BASEADDR;
+
+	rcc->AHB1ENR |= (1 << 1);
+	rcc->APB1ENR |= (1 << 14);
+
+	pinB->MODER &= ~(0xffffffff);
+	pinB->MODER |= (2 << (2 * PIN12)) | (2 << (2 * PIN13)) | (2 << (2 * PIN14)) | (2 << (2 * PIN15));
+
+	pinB->AFR[1] |= (5 << 16) | (5 << 20) | (5 << 24) | (5 << 28);
+
+	//output type == push pull
+	pinB->OTYPER &= ~(1 << PIN12) & ~(1 << PIN13) & ~(1 << PIN14) & ~(1 << PIN15);
+}
+
+void SPI2_Inits(void)
+{
+	SPI_Handle_t SPI2handle;
+	SPI2handle.pSPIx                    = SPI2;
+	SPI2handle.SPIConfig.SPI_BusConfig  = SPI_BUS_CONFIG_FD;
+	SPI2handle.SPIConfig.SPI_DeviceMode = SPI_DEVICE_MODE_MASTER;
+	SPI2handle.SPIConfig.SPI_SclkSpeed  = SPI_SCLK_SPEED_DIV2; //8 MHz
+	SPI2handle.SPIConfig.SPI_DFF        = SPI_DFF_8BITS;
+	SPI2handle.SPIConfig.SPI_CPOL       = SPI_CPOL_LOW;
+	SPI2handle.SPIConfig.SPI_CPHA       = SPI_CPHA_LOW;
+	SPI2handle.SPIConfig.SPI_SSM        = SPI_SSM_EN;
+
+
+	SPI_Init(&SPI2handle);
+
+	SPI2handle.pSPIx->CR1 = (1 << 6); //enable
+}
 
 int main(void)
 {
-  GPIO_RegDef_t *pinD = (GPIO_RegDef_t *)GPIOD_BASEADDR;
-  RCC_RegDef_t *rcc = (RCC_RegDef_t *)RCC_BASEADDR;
+	char user_data[] = "Hello World\n";
 
-  rcc->AHB1ENR |= (1 << 3);
+	SPI2_GPIOInits();
 
-  pinD->MODER |= (1 << 30);
+	SPI2_Inits();
 
-  pinD->ODR |= (1 << 15);
+	SPI_SendData(SPI2, (uint8_t*)user_data, strlen(user_data));
+
+
     /* Loop forever */
 	for(;;);
 }

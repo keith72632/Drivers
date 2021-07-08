@@ -85,7 +85,28 @@ void SPI_DeInit(SPI_RegDef_t *pSPIx)
 //Data transmission(Non-interrupt based)
 void SPI_SendData(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t len)
 {
+	while(len > 0)
+	{
+		//Wait until txe is 1 (empty)
+		while(!(pSPIx->SR & (1 << SPI_SR_TXE))){};
 
+		//Check the DFF bit
+		if(pSPIx->CR1 & (1 << SPI_CR1_DFF))
+		{
+			//16 bit
+			pSPIx->DR = *(uint16_t *)pTxBuffer;
+			len--;
+			len--;
+			(uint16_t*)pTxBuffer++;
+		}
+		else
+		{
+			//8 bit
+			pSPIx->DR = *pTxBuffer;
+			len--;
+			pTxBuffer++;
+		}
+	}
 };
 
 void SPI_ReceiveData(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t len)
