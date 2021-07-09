@@ -21,6 +21,7 @@
 #include <string.h>
 #include "stm32f407xx.h"
 #include "stm32f407xx_spi.h"
+#include "spi_tx.h"
 
 #if !defined(__SOFT_FP__) && defined(__ARM_FP)
   #warning "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
@@ -44,46 +45,163 @@ void SPI2_GPIOInits(void)
 	RCC_RegDef_t *rcc = (RCC_RegDef_t *)RCC_BASEADDR;
 
 	rcc->AHB1ENR |= (1 << 1);
-	rcc->APB1ENR |= (1 << 14);
 
 	pinB->MODER &= ~(0xffffffff);
-	pinB->MODER |= (2 << (2 * PIN12)) | (2 << (2 * PIN13)) | (2 << (2 * PIN14)) | (2 << (2 * PIN15));
+	pinB->MODER |= (2 << (2 * PIN13)) | (2 << (2 * PIN15));
 
-	pinB->AFR[1] |= (5 << 16) | (5 << 20) | (5 << 24) | (5 << 28);
+	pinB->AFR[1] |= (5 << 20) | (5 << 28);
 
 	//output type == push pull
-	pinB->OTYPER &= ~(1 << PIN12) & ~(1 << PIN13) & ~(1 << PIN14) & ~(1 << PIN15);
+	pinB->OTYPER &= ~(1 << PIN13) & ~(1 << PIN15);
+
+	pinB->OSPEEDR |= (3 << 26) | (3 <<  30);
 }
 
 void SPI2_Inits(void)
 {
+	RCC_RegDef_t *rcc = (RCC_RegDef_t *)RCC_BASEADDR;
+	rcc->APB1ENR |= (1 << 14);
 	SPI_Handle_t SPI2handle;
 	SPI2handle.pSPIx                    = SPI2;
 	SPI2handle.SPIConfig.SPI_BusConfig  = SPI_BUS_CONFIG_FD;
 	SPI2handle.SPIConfig.SPI_DeviceMode = SPI_DEVICE_MODE_MASTER;
 	SPI2handle.SPIConfig.SPI_SclkSpeed  = SPI_SCLK_SPEED_DIV2; //8 MHz
 	SPI2handle.SPIConfig.SPI_DFF        = SPI_DFF_8BITS;
-	SPI2handle.SPIConfig.SPI_CPOL       = SPI_CPOL_LOW;
+	SPI2handle.SPIConfig.SPI_CPOL       = SPI_CPOL_HIGH;
 	SPI2handle.SPIConfig.SPI_CPHA       = SPI_CPHA_LOW;
 	SPI2handle.SPIConfig.SPI_SSM        = SPI_SSM_EN;
 
 
 	SPI_Init(&SPI2handle);
 
-	SPI2handle.pSPIx->CR1 = (1 << 6); //enable
 }
+
+void SPI_PeripheralControl(SPI_RegDef_t *pSPIx, uint8_t EnOrDi)
+{
+	if(EnOrDi == ENABLE)
+	{
+		pSPIx->CR1 |=  (1 << SPI_CR1_SPE);
+	}else
+	{
+		pSPIx->CR1 &=  ~(1 << SPI_CR1_SPE);
+	}
+
+
+}
+
+void  SPI_SSIConfig(SPI_RegDef_t *pSPIx, uint8_t EnOrDi)
+{
+	if(EnOrDi == ENABLE)
+	{
+		pSPIx->CR1 |=  (1 << SPI_CR1_SSI);
+	}else
+	{
+		pSPIx->CR1 &=  ~(1 << SPI_CR1_SSI);
+	}
+
+
+}
+
+
+//void SPI_Config(void)
+//{
+//	RCC_RegDef_t *rcc = (RCC_RegDef_t *)RCC_BASEADDR;
+//	rcc->APB2ENR &= ~(0xffffffff);
+//	rcc->APB2ENR |= (1 << 12);
+//
+//	//CPOL = 1, CPHA = 1
+//	SPI1->CR1 |= (1 << 0) | (1 << 1);
+//	//master mode
+//	SPI1->CR1 |= (1 << 2);
+//	//BR = 011, fPCLK = 16MHz, PCLK2 = 8MHz, SPI clck = 5 MHz
+//	SPI1->CR1 |= (3 << 3);
+//	//LSBFIRST = 0; MSB first;
+//	SPI1->CR1 &= ~(1 << 7);
+//	//SSM = 1; SSi = 1
+//	SPI1->CR1 |= (1 << 8) | (1 << 9);
+//	//RX-Only = 0, full duplex
+//	SPI1->CR1 &= ~(1 << 10);
+//	//dff = 0; 8 bit data
+//	SPI1->CR1 &= ~(1 << 11);
+//
+//	SPI1->CR2 = 0;
+//}
+
+//void SPI1_GPIOInits(void)
+//{
+//	GPIO_RegDef_t *pinA = (GPIO_RegDef_t *)GPIOA_BASEADDR;
+//	RCC_RegDef_t *rcc = (RCC_RegDef_t *)RCC_BASEADDR;
+//
+//	rcc->AHB1ENR |= (1 << 0);
+//
+////	pinA->MODER &= ~(0xffffffff);
+//	pinA->MODER |= (2 << 10) | (2 << 12) | (2 << 14) | (1 << 18);
+//
+//	pinA->OSPEEDR |= (3 << 10) | (3 << 12) | (3 << 14) | (3 << 18);
+//
+//	pinA->AFR[0] |= (5 << 20) | (5 << 24) | (5 << 28);
+//
+//}
+
+
+//void SPI_send(uint8_t *data, int size)
+//{
+//	int i = 0;
+//	while(i < size)
+//	{
+//		while(!(SPI1->SR & (1 << 1))){};
+//		SPI1->DR = data[i];
+//		i++;
+//	}
+//
+//	//There is an APB2 clock delay between the write to DR and the BSY bit.
+//	//Wait until txe is set and bsy is cleared
+//	while(!(SPI1->SR & (1 << 1))){};
+//	while(SPI1->SR & (1 << 7)){};
+//	uint8_t temp = SPI1->DR;
+//	temp = SPI1->SR;
+//}
+//
+//void SPI_enable(void)
+//{
+//	SPI1->CR1 |= (1 << 6);
+//}
+//
+//void SPI_disable(void)
+//{
+//	SPI1->CR1 &= ~(1 << 6);
+//}
 
 int main(void)
 {
-	char user_data[] = "Hello World\n";
+	char user_data[] = "Hello world";
 
-	SPI2_GPIOInits();
+	//this function is used to initialize the GPIO pins to behave as SPI2 pins
+//	SPI2_GPIOInits();
+	Gpio_Init_TX();
+	//This function is used to initialize the SPI2 peripheral parameters
+//	SPI2_Inits();
+	TX_Spi_Init();
+	//this makes NSS signal internally high and avoids MODF error
+//	SPI_SSIConfig(SPI2,ENABLE);
+	SPI_SSOE(SPI2, ENABLE);
+	//enable the SPI2 peripheral
+	SPI_PeripheralControl(SPI2,ENABLE);
 
-	SPI2_Inits();
+	uint8_t len = 12;
+	SPI_SendData(SPI2,&len, 1);
 
-	SPI_SendData(SPI2, (uint8_t*)user_data, strlen(user_data));
+	//to send data
+	SPI_SendData(SPI2,(uint8_t*)user_data, 12);
 
+	//lets confirm SPI is not busy
+	while(SPI2->SR & (1 << 7));
 
-    /* Loop forever */
-	for(;;);
+	//Disable the SPI2 peripheral
+	SPI_PeripheralControl(SPI2,DISABLE);
+
+	while(1);
+
+	return 0;
+
 }
