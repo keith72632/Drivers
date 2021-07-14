@@ -102,7 +102,7 @@ void SPI_DeInit(SPI_RegDef_t *pSPIx);
 //Data transmission(Non-interrupt based)
 void SPI_SendData(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t len);
 void SPI_ReceiveData(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t len);
-
+int SPI_VerifyResponse(uint8_t ack_byte);
 //IRQ configuration  and ISR handling
 void SPI_IRQInterruptConfig(uint8_t IRQNumber, uint8_t EnorDi);
 void SPI_IRQPriorityConfig(uint8_t IRQNumber, uint32_t IRQPriority);

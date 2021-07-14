@@ -38,6 +38,27 @@
 #define PIN14    14
 #define PIN15    15
 
+//For arduino send/receive
+#define COMMAND_LED_CTRL       0x50
+#define COMMAND_SENSOR_READ    0x51
+#define COMMAND_LED_READ       0x52
+#define COMMAND_PRINT          0x53
+#define COMMAND_ID_READ        0x54
+
+#define LED_ON                 1
+#define LED_OFF                0
+
+//arduino analog pins
+#define ANALOG_PIN0            0
+#define ANALOG_PIN1            1
+#define ANALOG_PIN2            2
+#define ANALOG_PIN3            3
+#define ANALOG_PIN4            4
+
+//arduino LED
+#define LED_PIN                9
+
+
 
 void SPI2_GPIOInits(void)
 {
@@ -49,7 +70,8 @@ void SPI2_GPIOInits(void)
 	pinB->MODER &= ~(0xffffffff);
 	pinB->MODER |= (1 << (2 * PIN12)) | (2 << (2 * PIN13)) | ( 2 << (2 * PIN14)) | (2 << (2 * PIN15));
 
-	pinB->AFR[1] |= (5 << 20) | (5 << 24) | (5 << 28);
+	pinB->AFR[1] |= (5 << 16) | (5 << 20) | (5 << 24) | (5 << 28);
+
 
 	//output type == push pull
 	pinB->OTYPER &= ~(1 << PIN13) & ~(1 << PIN15);
@@ -105,7 +127,7 @@ void  SPI_SSIConfig(SPI_RegDef_t *pSPIx, uint8_t EnOrDi)
 
 int main(void)
 {
-	char user_data[] = "Hello world";
+	uint8_t dummy_byte = 0xff;
 
 	//this function is used to initialize the GPIO pins to behave as SPI2 pins
 	SPI2_GPIOInits();
@@ -119,11 +141,16 @@ int main(void)
 	//enable the SPI2 peripheral
 	SPI_PeripheralControl(SPI2,ENABLE);
 
-	uint8_t len = 12;
-	SPI_SendData(SPI2,&len, 1);
+	uint8_t command_code = COMMAND_LED_CTRL;
+	SPI_SendData(SPI2,&command_code, 1);
 
 	//to send data
-	SPI_SendData(SPI2,(uint8_t*)user_data, 12);
+	SPI_SendData(SPI2,&dummy_byte, 1);
+
+	uint8_t ack_byte;
+	SPI_ReceiveData(SPI2, &ack_byte, 1);
+
+	SPI_VerifyResponse(ack_byte);
 
 	//lets confirm SPI is not busy
 	while(SPI2->SR & (1 << 7));

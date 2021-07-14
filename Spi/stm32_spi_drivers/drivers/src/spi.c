@@ -111,10 +111,44 @@ void SPI_SendData(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t len)
 	}
 };
 
-void SPI_ReceiveData(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t len)
+void SPI_ReceiveData(SPI_RegDef_t *pSPIx, uint8_t *pRxBuffer, uint32_t len)
 {
+	while(len > 0)
+	{
+		//Wait until txe is 1 (empty)
+		while(!(pSPIx->SR & (1 << SPI_SR_RXNE))){};
 
+		//Check the DFF bit
+		if(pSPIx->CR1 & (1 << SPI_CR1_DFF))
+		{
+			//16 bit
+			*(uint16_t *)pRxBuffer = pSPIx->DR;
+			len--;
+			len--;
+			(uint16_t*)pRxBuffer++;
+		}
+		else
+		{
+			//8 bit
+			*pRxBuffer = pSPIx->DR;
+			len--;
+			pRxBuffer++;
+		}
+	}
 };
+
+int SPI_VerifyResponse(uint8_t ack_byte)
+{
+	if(ack_byte == 0xf5)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+};
+
 
 //IRQ configuration  and ISR handling
 void SPI_IRQInterruptConfig(uint8_t IRQNumber, uint8_t EnorDi)
