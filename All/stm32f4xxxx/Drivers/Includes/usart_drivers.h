@@ -5,6 +5,8 @@
  *      Author: keith
  */
 
+#include <stdint.h>
+
 #ifndef INCLUDES_USART_DRIVERS_H_
 #define INCLUDES_USART_DRIVERS_H_
 
@@ -17,6 +19,8 @@ enum {
 
 void UsartTwoInit(uint32_t baud_rate);
 void usart_putc(char c);
-void usart_puts(char *s, uint8_t new_line);
+//void usart_puts(char *s, uint8_t new_line);
+void usart_puts(char *s, uint32_t len, uint8_t new_line);
+uint8_t usart_getc(void);
 
 #endif /* INCLUDES_USART_DRIVERS_H_ */

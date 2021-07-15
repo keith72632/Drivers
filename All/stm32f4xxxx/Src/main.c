@@ -19,6 +19,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include "usart_drivers.h"
 #include "gpio_drivers.h"
 
@@ -40,14 +41,22 @@ int main(void)
     /* Loop forever */
 	while(1)
 	{
+		uint8_t c;
 		char string[] = "hello";
-		usart_puts(string, NO_NEW_LINE);
+		char message[] = "If c, it worked!";
+		uint8_t len = strlen(string);
+		usart_puts(string, len, NEW_LINE);
 
 		GpioTogglePin(GPIOD, 15);
 
 		for(int i = 0; i < 1000000; i++){};
 
 		GpioTogglePin(GPIOD, 15);
+		c = usart_getc();
+		usart_puts(message, strlen(message), NEW_LINE);
+
+		usart_putc(c | 32);
+
 
 		for(int i = 0; i < 1000000; i++){};
 	}
@@ -63,7 +72,7 @@ void GpioInit()
 
 void UsartInit(uint32_t baud_rate)
 {
-	//PA9 USART_TX. PA10 USART_RX. Alternate Function F7(0x07)
+	//PA2 USART_TX. PA3 USART_RX. Alternate Function F7(0x07)
 	GPIOA_PCLK_EN();
 
 	GpioPinInit(GPIOA, 2, (uint8_t)GPIO_ALT);
