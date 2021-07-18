@@ -127,30 +127,37 @@ void  SPI_SSIConfig(SPI_RegDef_t *pSPIx, uint8_t EnOrDi)
 
 int main(void)
 {
-	uint8_t dummy_byte = 0xff;
+//	uint8_t dummy_byte = 0xff;
+	char data[] = "hello world\n";
 
 	//this function is used to initialize the GPIO pins to behave as SPI2 pins
-	SPI2_GPIOInits();
-//	Gpio_Init_TX();
+//	SPI2_GPIOInits();
+	Gpio_Init_TX();
 	//This function is used to initialize the SPI2 peripheral parameters
-	SPI2_Inits();
-//	TX_Spi_Init();
+//	SPI2_Inits();
+	TX_Spi_Init();
 	//this makes NSS signal internally high and avoids MODF error
-	SPI_SSIConfig(SPI2,ENABLE);
+//	SPI_SSIConfig(SPI2,ENABLE);
 	SPI_SSOE(SPI2, ENABLE);
+
+	/***Code for button press(PA0, input)***/
+
+
 	//enable the SPI2 peripheral
 	SPI_PeripheralControl(SPI2,ENABLE);
 
-	uint8_t command_code = COMMAND_LED_CTRL;
-	SPI_SendData(SPI2,&command_code, 1);
+	uint8_t len= 15;
+	SPI_SendData(SPI2, &len, 1);
+//	uint8_t command_code = COMMAND_LED_CTRL;
+	SPI_SendData(SPI2,(uint8_t*)data, strlen(data));
 
 	//to send data
-	SPI_SendData(SPI2,&dummy_byte, 1);
+//	SPI_SendData(SPI2,&dummy_byte, 1);
 
-	uint8_t ack_byte;
-	SPI_ReceiveData(SPI2, &ack_byte, 1);
+//	uint8_t ack_byte;
+//	SPI_ReceiveData(SPI2, &ack_byte, 1);
 
-	SPI_VerifyResponse(ack_byte);
+//	SPI_VerifyResponse(ack_byte);
 
 	//lets confirm SPI is not busy
 	while(SPI2->SR & (1 << 7));

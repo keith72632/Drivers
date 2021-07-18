@@ -244,6 +244,18 @@ typedef struct
 	__vo uint32_t GTPR;       /*!< TODO,     										Address offset: 0x18 */
 } USART_RegDef_t;
 
+typedef struct
+{
+	__vo uint32_t CR1;
+	__vo uint32_t CR2;
+	__vo uint32_t SR;
+	__vo uint32_t DR;
+	__vo uint32_t CRCPR;
+	__vo uint32_t RXCRC;
+	__vo uint32_t TXCRC;
+	__vo uint32_t I2FCSRG;
+	__vo uint32_t I2SPR;
+}SPI_RegDef_t;
 /*
  * peripheral definitions ( Peripheral base addresses typecasted to xxx_RegDef_t)
  */
@@ -301,6 +313,12 @@ typedef struct
 #define I2C1_PCLK_EN() (RCC->APB1ENR |= (1 << 21))
 #define I2C2_PCLK_EN() (RCC->APB1ENR |= (1 << 22))
 #define I2C3_PCLK_EN() (RCC->APB1ENR |= (1 << 23))
+
+/*
+ * Clock Enable Macros for SPIx peripherals
+ */
+
+#define SPI1_PCLK_EN() (RCC->APB2ENR |= (1 << 12))
 
 
 

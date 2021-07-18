@@ -20,8 +20,11 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include "mem.h"
 #include "usart_drivers.h"
 #include "gpio_drivers.h"
+#include "spi_drivers.h"
+
 
 #if !defined(__SOFT_FP__) && defined(__ARM_FP)
   #warning "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
@@ -30,11 +33,16 @@
 /***Prototyes***/
 void GpioInit(void);
 void UsartInit(uint32_t baud_rate);
+void SPI1_ClockInit(void);
 
 int main(void)
 {
 
 	GpioInit();
+
+	SPI1_ClockInit();
+
+	SPI_Init(SPI1);
 
 	UsartInit(BAUD_RATE_9600);
 
@@ -88,4 +96,11 @@ void UsartInit(uint32_t baud_rate)
 
 	UsartTwoInit(baud_rate);
 
+}
+
+void SPI1_ClockInit()
+{
+	GPIOA_PCLK_EN();
+
+	SPI1_PCLK_EN();
 }

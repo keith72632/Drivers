@@ -83,7 +83,8 @@ void TX_Spi_Init()
 	SPI2handle.SPIConfig.SPI_DFF = SPI_DFF_8BITS;
 	SPI2handle.SPIConfig.SPI_CPOL = SPI_CPOL_LOW;
 	SPI2handle.SPIConfig.SPI_CPHA = SPI_CPHA_LOW;
-	SPI2handle.SPIConfig.SPI_SSM = SPI_SSM_DI;
+	SPI2handle.SPIConfig.SPI_SSM = SPI_SSM_DI; //DI == Hardware. SSM == 0. When SPE == 1, NSS pulled to low automatically. SPE == 1, nss pulled high automatically
+	//when ssoe enabled, nss output enabled. SSOE = slave select output enabled
 
 	TX_SPI_Activate(&SPI2handle);
 
