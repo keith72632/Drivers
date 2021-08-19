@@ -49,24 +49,19 @@ int main(void)
     /* Loop forever */
 	while(1)
 	{
-		uint8_t c;
-		char string[] = "hello";
-		char message[] = "If c, it worked!";
-		uint8_t len = strlen(string);
-		usart_puts(string, len, NEW_LINE);
+		uint8_t rxBuffer[10];
 
-		GpioTogglePin(GPIOD, 15);
+		GpioTogglePin(GPIOD, GPIO_PIN_15);
 
-		for(int i = 0; i < 1000000; i++){};
+		SPI_NSS_LOW();
 
-		GpioTogglePin(GPIOD, 15);
-		c = usart_getc();
-		usart_puts(message, strlen(message), NEW_LINE);
+		SPI1_Receive(SPI1, rxBuffer, 10);
 
-		usart_putc(c | 32);
+		SPI_NSS_HIGH();
 
+		usart_puts((char *)rxBuffer, 10, NEW_LINE);
 
-		for(int i = 0; i < 1000000; i++){};
+		for(int i = 0; i < 100000; i++);
 	}
 }
 
